@@ -52,6 +52,12 @@ namespace Bonsai.WebSockets
             public string Age;
         }
 
+        public class PupilEvent
+        {
+            public string name;
+            public Int64 timestamp;
+        }
+
         public enum RequestType
         {
             GET,
