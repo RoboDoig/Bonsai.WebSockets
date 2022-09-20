@@ -9,6 +9,7 @@ using System.Reactive.Linq;
 using System.Runtime.Remoting.Messaging;
 using System.Reactive.Disposables;
 using System.Threading;
+using System.IO;
 
 namespace Bonsai.WebSockets
 {
@@ -16,10 +17,6 @@ namespace Bonsai.WebSockets
     {
         public string Host { get; set; }
         public int Port { get; set; }
-
-        //private readonly ManualResetEvent ConnectDone = new ManualResetEvent(false);
-        //private readonly ManualResetEvent SendDone = new ManualResetEvent(false);
-        //private readonly ManualResetEvent ReceiveDone = new ManualResetEvent(false);
 
         public override IObservable<string> Generate()
         {
@@ -40,11 +37,20 @@ namespace Bonsai.WebSockets
                     {
                         if (stream.DataAvailable)
                         {
-                            byte[] readBuffer = new byte[4096];
+                            byte[] readBuffer = new byte[client.Available];
+                            StringBuilder sb = new StringBuilder();
                             int bytesRead = stream.Read(readBuffer, 0, readBuffer.Length);
                             if (bytesRead > 0)
                             {
-                                observer.OnNext(Encoding.ASCII.GetString(readBuffer));
+                                var readString = Encoding.ASCII.GetString(readBuffer, 0, bytesRead);
+                                using (StringReader reader = new StringReader(readString))
+                                {
+                                    string line;
+                                    while ((line = reader.ReadLine()) != null)
+                                    {
+                                        observer.OnNext(line);
+                                    }
+                                }
                             }
                         }
                     }
